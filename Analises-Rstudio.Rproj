@@ -1,16 +1,51 @@
-Version: 1.0
 
-RestoreWorkspace: Default
-SaveWorkspace: Default
-AlwaysSaveHistory: Default
+dat.graf<- read.csv("C:/Users/Gabriel/Documents/Bases/Leads_Litoral.csv", header = TRUE, sep = ";", dec=",")
+names(dat.graf)
+colnames(dat.graf)
+colnames(dat.graf)<-c("Municipio", "0 - 6","6 - 9","9 - 12","12 - 15",
+                      "15 - 18","maior 18") #Tirando o X dos nomes das colunas
+View (dat.graf)
 
-EnableCodeIndexing: Yes
-UseSpacesForTab: Yes
-NumSpacesForTab: 2
-Encoding: UTF-8
+### RETIRANDO E COLOCANDO O NOME DA PRIMEIRA COLUNA """"" MUITO IMPORTANTE
 
-RnwWeave: Sweave
-LaTeX: pdfLaTeX
+dados.quanti<- dat.graf[,-1] # Tirando o nome
+dados.quanti
 
-AutoAppendNewline: Yes
-StripTrailingWhitespace: Yes
+row.names(dados.quanti)= dat.graf[,1] # colocando o nome
+dados.quanti
+
+dados.quanti<-as.matrix(dados.quanti) # transformando em matrix
+dados.quanti
+
+#Cálculo das distâncias entre os casos
+d<-dist(dados.quanti, method="euclidean")
+d
+
+#Considerando a distãncia euclideana ao quadrado...
+d2<-d^2
+d2
+
+#Cluster Hierárquico, método simples:
+grupos.s<- hclust(d2, method="single")
+grupos.c<- hclust(d2, method="complete") #ligação completa
+grupos.m<- hclust(d2, method="average") #ligação média
+grupos.w<- hclust(d2, method="ward.D") #método de ward ou ward.D (depende da versão do R)
+
+#Dendrograma
+clstr<- grupos.s #considerando o método de ligação simples
+plot(clstr) #faz o dendrograma
+groups<-cutree(clstr, k=4)
+rect.hclust(grupos.s, k=4, border = "red")
+clstr[]
+groups
+
+# substitui no dendrograma o nome do objeto pelo número do grupo
+plot(clstr, labels = as.character(groups)) # fica uma bosta
+
+plot(clstr)
+r <- rect.hclust(clstr, 4)
+
+#desenha no dendrograma os números que cada grupo está localizado
+text(cumsum(sapply(r,length)),
+     rep(mean(tail(unique(clstr$hei),2)), length(r)),
+     paste(unique(groups[clstr$ord])))
